@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}输出浏览 — Director Factory{% endblock %}
+
+{% block content %}
+<div class="mb-16">
+    <a href="/" class="text-muted text-sm">&larr; 返回仪表盘</a>
+</div>
+
+<h1 class="mb-24">输出文件浏览</h1>
+
+<!-- 过滤器 -->
+<div class="output-toolbar">
+    <a href="/files" class="output-filter{% if not current_filter %} active{% endif %}">全部</a>
+    <a href="/files?type=image" class="output-filter{% if current_filter == 'image' %} active{% endif %}">帧图像</a>
+    <a href="/files?type=video" class="output-filter{% if current_filter == 'video' %} active{% endif %}">视频</a>
+    <a href="/files?type=audio" class="output-filter{% if current_filter == 'audio' %} active{% endif %}">音频</a>
+    <a href="/files?type=subtitle" class="output-filter{% if current_filter == 'subtitle' %} active{% endif %}">字幕</a>
+    <a href="/files?type=data" class="output-filter{% if current_filter == 'data' %} active{% endif %}">数据</a>
+</div>
+
+{% if files %}
+<div class="file-grid">
+    {% for f in files %}
+    <div class="file-card">
+        <div class="file-icon">
+            {% if f.type == 'image' %}&#x1F5BC;
+            {% elif f.type == 'video' %}&#x1F3AC;
+            {% elif f.type == 'audio' %}&#x1F3B5;
+            {% elif f.type == 'subtitle' %}&#x1F4DD;
+            {% elif f.type == 'data' %}&#x1F4CA;
+            {% else %}&#x1F4C4;{% endif %}
+        </div>
+        <div class="file-name">{{ f.name }}</div>
+        <div class="file-meta">
+            {% if f.size >= 1048576 %}
+            {{ "%.1f"|format(f.size / 1048576) }} MB
+            {% elif f.size >= 1024 %}
+            {{ "%.0f"|format(f.size / 1024) }} KB
+            {% else %}
+            {{ f.size }} B
+            {% endif %}
+            &middot;
+            {% if f.type == 'image' %}
+            <a href="/{{ f.path }}" target="_blank">查看</a>
+            {% elif f.type == 'video' %}
+            <a href="/{{ f.path }}" target="_blank">播放</a>
+            {% else %}
+            <a href="/{{ f.path }}" download>下载</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <h3>暂无输出文件</h3>
+    <p>运行管线后，生成的图像、视频、音频和字幕将出现在这里。</p>
+    <a href="/new" class="btn btn-primary" style="margin-top:16px">创建新项目</a>
+</div>
+{% endif %}
+{% endblock %}

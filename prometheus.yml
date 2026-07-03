@@ -1,0 +1,38 @@
+# Prometheus 监控配置 — 导演工厂
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: director-factory
+    env: production
+
+scrape_configs:
+  - job_name: director-factory
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - app:9091
+        labels:
+          service: director-factory
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - localhost:9090
+
+  - job_name: postgres
+    static_configs:
+      - targets:
+          - postgres-exporter:9187
+        labels:
+          service: postgresql
+
+  - job_name: redis
+    static_configs:
+      - targets:
+          - redis-exporter:9121
+        labels:
+          service: redis

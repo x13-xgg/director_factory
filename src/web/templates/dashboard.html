@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}仪表盘 — Director Factory{% endblock %}
+
+{% block content %}
+<div class="flex-between mb-24">
+    <h1>仪表盘</h1>
+    <a href="/new" class="btn btn-primary">+ 新建项目</a>
+</div>
+
+<!-- 全局统计 -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total }}</div>
+        <div class="stat-label">总项目</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.completed }}</div>
+        <div class="stat-label">已完成</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.avg_score }}</div>
+        <div class="stat-label">平均质量分</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ config.output_dir }}</div>
+        <div class="stat-label">输出目录</div>
+    </div>
+</div>
+
+<!-- 项目列表 -->
+<div class="card">
+    <div class="card-header">
+        <span>项目列表</span>
+        <span class="text-muted text-sm">{{ projects|length }} 个项目</span>
+    </div>
+
+    {% if projects %}
+    <div class="project-list">
+        {% for p in projects %}
+        <div class="project-item">
+            <div class="project-info">
+                <div class="project-title">
+                    <a href="/project/{{ p.id }}">{{ p.title or p.id }}</a>
+                </div>
+                <div class="project-meta">
+                    {{ p.scenes }} 场景 · {{ p.shots_planned }} 镜头 · {{ p.characters }} 角色
+                </div>
+            </div>
+            <div class="project-stats">
+                <div class="project-stat" style="min-width:80px">
+                    <div style="margin-bottom:4px">
+                        <span class="badge {{ p.status }}">{{ p.status }}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill{% if p.status == 'ok' %} complete{% elif p.status == 'running' %} running{% elif p.status == 'failed' %} error{% endif %}"
+                             style="width:{{ p.progress }}%"></div>
+                    </div>
+                </div>
+                <div class="project-stat">
+                    <div class="val">{{ p.avg_score }}</div>
+                    <div class="lbl">均分</div>
+                </div>
+                <div class="project-stat">
+                    <div class="val">{{ p.total_duration }}s</div>
+                    <div class="lbl">时长</div>
+                </div>
+                {% if p.has_video %}
+                <div class="project-stat">
+                    <a href="/project/{{ p.id }}" class="btn btn-sm btn-outline">查看</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h3>暂无项目</h3>
+        <p>还没有创建任何视频生产项目。</p>
+        <a href="/new" class="btn btn-primary" style="margin-top:16px">创建第一个项目</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

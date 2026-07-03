@@ -1,0 +1,41 @@
+# 敏感文件
+.env
+.claude/settings.local.json
+
+# 模型权重 (太大, 不适合 Git)
+assets/models/
+
+# 第三方启动器 (非项目代码)
+.launcher/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 测试 & 覆盖率
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# 输出 & 运行时
+outputs/
+*.log
+
+# Docker
+.postgres-data/
+
+# OS
+.DS_Store
+Thumbs.db

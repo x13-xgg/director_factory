@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Director Factory{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-brand">
+            <a href="/">Director Factory</a>
+            <span class="nav-subtitle">全自动视频生产系统</span>
+        </div>
+        <div class="nav-links">
+            <a href="/">仪表盘</a>
+            <a href="/new">新建项目</a>
+            <a href="/files">输出浏览</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <span>Director Factory v{{ config.version }}</span>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

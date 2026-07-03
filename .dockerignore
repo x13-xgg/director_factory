@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual env
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Output (built at runtime)
+outputs/
+
+# Env (don't bake secrets into image)
+.env
+*.env
+
+# Tests
+tests/
+pytest.ini
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs
+*.md
+docs/
+
+# CI
+.github/
+
+# Large model files (mounted as volumes at runtime)
+assets/models/
+assets/loras/*.safetensors

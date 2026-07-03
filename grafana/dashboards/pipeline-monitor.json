@@ -1,0 +1,488 @@
+{
+  "dashboard": {
+    "uid": "director-factory-pipeline",
+    "title": "导演工厂 — 管线监控",
+    "description": "全自动导演工厂生产管线实时监控仪表板",
+    "tags": ["director-factory", "pipeline", "ai-video"],
+    "timezone": "browser",
+    "schemaVersion": 39,
+    "version": 1,
+    "refresh": "5s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "管线总览",
+        "type": "row",
+        "collapsed": false,
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "项目进度",
+        "type": "bargauge",
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 1},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0, "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 50},
+                {"color": "green", "value": 80}
+              ]
+            }
+          }
+        },
+        "targets": [
+          {
+            "expr": "director_factory_pipeline_progress_pct",
+            "legendFormat": "整体进度",
+            "refId": "A"
+          },
+          {
+            "expr": "director_factory_phase_progress{phase=\"script\"}",
+            "legendFormat": "剧本",
+            "refId": "B"
+          },
+          {
+            "expr": "director_factory_phase_progress{phase=\"character\"}",
+            "legendFormat": "角色",
+            "refId": "C"
+          },
+          {
+            "expr": "director_factory_phase_progress{phase=\"shooting\"}",
+            "legendFormat": "拍摄",
+            "refId": "D"
+          },
+          {
+            "expr": "director_factory_phase_progress{phase=\"audio\"}",
+            "legendFormat": "音频",
+            "refId": "E"
+          },
+          {
+            "expr": "director_factory_phase_progress{phase=\"post\"}",
+            "legendFormat": "后期",
+            "refId": "F"
+          }
+        ],
+        "options": {"orientation": "horizontal", "displayMode": "gradient", "showUnfilled": true}
+      },
+      {
+        "id": 3,
+        "title": "项目状态",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 4, "x": 6, "y": 1},
+        "targets": [
+          {"expr": "director_factory_project_status", "legendFormat": "{{status}}", "refId": "A"}
+        ],
+        "options": {"colorMode": "background", "graphMode": "none", "textMode": "value"},
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"type": "value", "value": "0", "text": "空闲"},
+              {"type": "value", "value": "1", "text": "运行中"},
+              {"type": "value", "value": "2", "text": "完成"},
+              {"type": "value", "value": "3", "text": "失败"}
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "gray", "value": null},
+                {"color": "blue", "value": 1},
+                {"color": "green", "value": 2},
+                {"color": "red", "value": 3}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "已耗时",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 4, "x": 10, "y": 1},
+        "targets": [
+          {"expr": "director_factory_elapsed_seconds", "legendFormat": "耗时", "refId": "A"}
+        ],
+        "options": {"colorMode": "value", "graphMode": "area", "textMode": "value"},
+        "fieldConfig": {
+          "defaults": {"unit": "s", "decimals": 1}
+        }
+      },
+      {
+        "id": 5,
+        "title": "预计剩余时间",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 4, "x": 14, "y": 1},
+        "targets": [
+          {"expr": "director_factory_eta_remaining_seconds", "legendFormat": "ETA", "refId": "A"}
+        ],
+        "options": {"colorMode": "value", "graphMode": "area", "textMode": "value"},
+        "fieldConfig": {
+          "defaults": {"unit": "s", "decimals": 1}
+        }
+      },
+      {
+        "id": 6,
+        "title": "总帧数 / 已完成",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 3, "x": 18, "y": 1},
+        "targets": [
+          {"expr": "director_factory_shots_total", "legendFormat": "总计", "refId": "A"},
+          {"expr": "director_factory_shots_completed", "legendFormat": "完成", "refId": "B"}
+        ],
+        "options": {"colorMode": "value", "graphMode": "none", "textMode": "value_and_name"}
+      },
+      {
+        "id": 7,
+        "title": "活跃项目数",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 3, "x": 21, "y": 1},
+        "targets": [
+          {"expr": "director_factory_active_projects", "legendFormat": "活跃", "refId": "A"}
+        ],
+        "options": {"colorMode": "value", "graphMode": "none", "textMode": "value"}
+      },
+      {
+        "id": 10,
+        "title": "GPU 与资源",
+        "type": "row",
+        "collapsed": false,
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 9}
+      },
+      {
+        "id": 11,
+        "title": "GPU VRAM 使用 (预估)",
+        "type": "gauge",
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 10},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "decgbytes",
+            "min": 0, "max": 24,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 16},
+                {"color": "red", "value": 22}
+              ]
+            }
+          }
+        },
+        "targets": [
+          {"expr": "director_factory_gpu_vram_used_gb", "legendFormat": "已用", "refId": "A"}
+        ],
+        "options": {"showThresholdLabels": true, "showThresholdMarkers": true}
+      },
+      {
+        "id": 12,
+        "title": "GPU 利用率趋势",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 6, "y": 10},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0, "max": 100,
+            "custom": {"fillOpacity": 15, "lineWidth": 2}
+          }
+        },
+        "targets": [
+          {"expr": "director_factory_gpu_utilization_pct", "legendFormat": "GPU %", "refId": "A"},
+          {"expr": "director_factory_vram_utilization_pct", "legendFormat": "VRAM %", "refId": "B"}
+        ]
+      },
+      {
+        "id": 13,
+        "title": "并发镜头数",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 10},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "custom": {"fillOpacity": 20, "lineWidth": 2, "stacking": {"mode": "normal"}}
+          }
+        },
+        "targets": [
+          {"expr": "director_factory_concurrent_shots", "legendFormat": "进行中", "refId": "A"},
+          {"expr": "director_factory_pending_shots", "legendFormat": "等待中", "refId": "B"},
+          {"expr": "director_factory_blocked_shots", "legendFormat": "阻塞", "refId": "C"}
+        ]
+      },
+      {
+        "id": 20,
+        "title": "管线延迟",
+        "type": "row",
+        "collapsed": false,
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 18}
+      },
+      {
+        "id": 21,
+        "title": "各阶段耗时 (P50/P95/P99)",
+        "type": "timeseries",
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 19},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "custom": {"fillOpacity": 10, "lineWidth": 2}
+          }
+        },
+        "targets": [
+          {"expr": "histogram_quantile(0.50, rate(director_factory_phase_duration_seconds_bucket[5m]))", "legendFormat": "P50 {{phase}}", "refId": "A"},
+          {"expr": "histogram_quantile(0.95, rate(director_factory_phase_duration_seconds_bucket[5m]))", "legendFormat": "P95 {{phase}}", "refId": "B"},
+          {"expr": "histogram_quantile(0.99, rate(director_factory_phase_duration_seconds_bucket[5m]))", "legendFormat": "P99 {{phase}}", "refId": "C"}
+        ]
+      },
+      {
+        "id": 22,
+        "title": "TTS 合成延迟",
+        "type": "timeseries",
+        "gridPos": {"h": 10, "w": 6, "x": 12, "y": 19},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "custom": {"fillOpacity": 15, "lineWidth": 2}
+          }
+        },
+        "targets": [
+          {"expr": "rate(director_factory_tts_duration_seconds_sum[1m]) / rate(director_factory_tts_duration_seconds_count[1m])", "legendFormat": "平均TTS耗时", "refId": "A"}
+        ]
+      },
+      {
+        "id": 23,
+        "title": "生成延迟分布",
+        "type": "heatmap",
+        "gridPos": {"h": 10, "w": 6, "x": 18, "y": 19},
+        "fieldConfig": {
+          "defaults": {
+            "custom": {"scaleDistribution": {"type": "log"}}
+          }
+        },
+        "targets": [
+          {"expr": "sum(rate(director_factory_shot_duration_seconds_bucket[5m])) by (le)", "legendFormat": "{{le}}", "format": "heatmap", "refId": "A"}
+        ]
+      },
+      {
+        "id": 30,
+        "title": "质量评分",
+        "type": "row",
+        "collapsed": false,
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 29}
+      },
+      {
+        "id": 31,
+        "title": "综合质量评分趋势",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 30},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "min": 0, "max": 1,
+            "custom": {"fillOpacity": 15, "lineWidth": 2}
+          }
+        },
+        "targets": [
+          {"expr": "director_factory_quality_score{type=\"overall\"}", "legendFormat": "综合", "refId": "A"},
+          {"expr": "director_factory_quality_score{type=\"composition\"}", "legendFormat": "构图", "refId": "B"},
+          {"expr": "director_factory_quality_score{type=\"face_consistency\"}", "legendFormat": "人脸一致性", "refId": "C"},
+          {"expr": "director_factory_quality_score{type=\"emotion\"}", "legendFormat": "情绪匹配", "refId": "D"},
+          {"expr": "director_factory_quality_score{type=\"lighting\"}", "legendFormat": "光照", "refId": "E"}
+        ],
+        "thresholds": {
+          "mode": "line",
+          "steps": [
+            {"color": "red", "value": null},
+            {"color": "green", "value": 0.85}
+          ]
+        }
+      },
+      {
+        "id": 32,
+        "title": "当前质量分",
+        "type": "gauge",
+        "gridPos": {"h": 8, "w": 4, "x": 12, "y": 30},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "min": 0, "max": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 0.7},
+                {"color": "green", "value": 0.85}
+              ]
+            }
+          }
+        },
+        "targets": [
+          {"expr": "director_factory_quality_score{type=\"overall\"}", "legendFormat": "综合分", "refId": "A"}
+        ],
+        "options": {"showThresholdLabels": true, "showThresholdMarkers": true}
+      },
+      {
+        "id": 33,
+        "title": "重试率",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 4, "x": 16, "y": 30},
+        "targets": [
+          {"expr": "rate(director_factory_retries_total[5m]) / rate(director_factory_shots_total[5m])", "legendFormat": "重试率", "refId": "A"}
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 0.05},
+                {"color": "red", "value": 0.15}
+              ]
+            }
+          }
+        },
+        "options": {"colorMode": "background", "graphMode": "area", "textMode": "value"}
+      },
+      {
+        "id": 34,
+        "title": "质量达标率",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 4, "x": 20, "y": 30},
+        "targets": [
+          {"expr": "director_factory_quality_pass_ratio", "legendFormat": "达标率", "refId": "A"}
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 0.8},
+                {"color": "green", "value": 0.95}
+              ]
+            }
+          }
+        },
+        "options": {"colorMode": "background", "graphMode": "area", "textMode": "value"}
+      },
+      {
+        "id": 40,
+        "title": "Agent 调用统计",
+        "type": "row",
+        "collapsed": false,
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 38}
+      },
+      {
+        "id": 41,
+        "title": "Agent 调用次数",
+        "type": "barchart",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 39},
+        "targets": [
+          {"expr": "sum(rate(director_factory_agent_calls_total[5m])) by (agent)", "legendFormat": "{{agent}}", "refId": "A"}
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {"fillOpacity": 80}
+          }
+        }
+      },
+      {
+        "id": 42,
+        "title": "Agent 错误率",
+        "type": "barchart",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 39},
+        "targets": [
+          {"expr": "sum(rate(director_factory_agent_errors_total[5m])) by (agent) / sum(rate(director_factory_agent_calls_total[5m])) by (agent)", "legendFormat": "{{agent}}", "refId": "A"}
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "min": 0, "max": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 0.05},
+                {"color": "red", "value": 0.15}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 43,
+        "title": "LLM API 调用延迟",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 47},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "custom": {"fillOpacity": 10, "lineWidth": 2}
+          }
+        },
+        "targets": [
+          {"expr": "histogram_quantile(0.50, rate(director_factory_llm_request_duration_seconds_bucket[5m]))", "legendFormat": "LLM P50", "refId": "A"},
+          {"expr": "histogram_quantile(0.95, rate(director_factory_llm_request_duration_seconds_bucket[5m]))", "legendFormat": "LLM P95", "refId": "B"},
+          {"expr": "histogram_quantile(0.99, rate(director_factory_llm_request_duration_seconds_bucket[5m]))", "legendFormat": "LLM P99", "refId": "C"}
+        ]
+      },
+      {
+        "id": 44,
+        "title": "LLM Token 消耗速率",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 47},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "toks/min",
+            "custom": {"fillOpacity": 15, "lineWidth": 2}
+          }
+        },
+        "targets": [
+          {"expr": "rate(director_factory_llm_tokens_total[1m]) * 60", "legendFormat": "Tokens/min", "refId": "A"}
+        ]
+      },
+      {
+        "id": 50,
+        "title": "消息总线",
+        "type": "row",
+        "collapsed": false,
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 55}
+      },
+      {
+        "id": 51,
+        "title": "消息吞吐量",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 56},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ops/min",
+            "custom": {"fillOpacity": 10, "lineWidth": 2}
+          }
+        },
+        "targets": [
+          {"expr": "rate(director_factory_messages_total{type=\"published\"}[1m]) * 60", "legendFormat": "发布", "refId": "A"},
+          {"expr": "rate(director_factory_messages_total{type=\"delivered\"}[1m]) * 60", "legendFormat": "投递", "refId": "B"},
+          {"expr": "rate(director_factory_messages_total{type=\"dead_letter\"}[1m]) * 60", "legendFormat": "死信", "refId": "C"}
+        ]
+      },
+      {
+        "id": 52,
+        "title": "消息队列深度",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 56},
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "custom": {"fillOpacity": 20, "lineWidth": 2}
+          }
+        },
+        "targets": [
+          {"expr": "director_factory_message_queue_depth", "legendFormat": "队列深度", "refId": "A"}
+        ]
+      }
+    ],
+    "time": {"from": "now-30m", "to": "now"}
+  }
+}

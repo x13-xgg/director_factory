@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+{% block title %}{{ project.title }} — Director Factory{% endblock %}
+
+{% block content %}
+<div class="mb-16">
+    <a href="/" class="text-muted text-sm">&larr; 返回仪表盘</a>
+</div>
+
+<div class="detail-header">
+    <div>
+        <h1>{{ project.title }}</h1>
+        <span class="text-muted text-sm">ID: {{ project.id }}</span>
+    </div>
+    <span class="badge {{ project.status }}">{{ project.status }}</span>
+</div>
+
+<!-- 进度条 -->
+<div class="card mb-24">
+    <div class="flex-between mb-16">
+        <span class="font-weight:600">生产进度</span>
+        <span class="text-sm">{{ project.shots_completed }} / {{ project.shots_planned }} 镜头</span>
+    </div>
+    <div class="progress-bar">
+        <div class="progress-fill{% if project.status == 'ok' %} complete{% elif project.status == 'running' %} running{% elif project.status == 'failed' %} error{% endif %}"
+             style="width:{{ project.progress }}%"></div>
+    </div>
+    <div style="text-align:center;margin-top:6px;font-weight:700;font-size:1.1rem">{{ project.progress }}%</div>
+</div>
+
+<!-- 统计 -->
+<div class="detail-grid mb-24">
+    <div class="detail-stat">
+        <div class="val">{{ project.characters }}</div>
+        <div class="lbl">角色</div>
+    </div>
+    <div class="detail-stat">
+        <div class="val">{{ project.scenes }}</div>
+        <div class="lbl">场景</div>
+    </div>
+    <div class="detail-stat">
+        <div class="val">{{ project.shots_planned }}</div>
+        <div class="lbl">计划镜头</div>
+    </div>
+    <div class="detail-stat">
+        <div class="val">{{ project.total_duration }}s</div>
+        <div class="lbl">总时长</div>
+    </div>
+    <div class="detail-stat">
+        <div class="val">{{ project.avg_score }}</div>
+        <div class="lbl">平均质量分</div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+    <div class="tab active" data-tab="frames">帧预览</div>
+    <div class="tab" data-tab="quality">质量报告</div>
+    <div class="tab" data-tab="video">输出视频</div>
+    <div class="tab" data-tab="raw">原始数据</div>
+</div>
+
+<!-- Tab: 帧预览 -->
+<div class="tab-content active" id="tab-frames">
+    {% if project.frames %}
+    <div class="frame-gallery">
+        {% for f in project.frames %}
+        <div class="frame-card">
+            <img src="/{{ f.path }}" alt="{{ f.name }}" loading="lazy">
+            <div class="frame-label">{{ f.name }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h3>暂无帧</h3>
+        <p>项目尚未生成任何帧，或正在生产中...</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Tab: 质量报告 -->
+<div class="tab-content" id="tab-quality">
+    {% if project.quality and project.quality.shots %}
+    <div class="card mb-16">
+        <div class="card-header">质量概览</div>
+        <div class="detail-grid">
+            <div class="detail-stat">
+                <div class="val">{{ project.quality.avg_score }}</div>
+                <div class="lbl">平均分</div>
+            </div>
+            <div class="detail-stat">
+                <div class="val">{{ project.quality.max_score }}</div>
+                <div class="lbl">最高分</div>
+            </div>
+            <div class="detail-stat">
+                <div class="val">{{ project.quality.min_score }}</div>
+                <div class="lbl">最低分</div>
+            </div>
+            <div class="detail-stat">
+                <div class="val">{{ project.quality.passed }} / {{ project.quality.total_frames }}</div>
+                <div class="lbl">通过 / 总计</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">镜头评分明细</div>
+        <table class="quality-table">
+            <thead>
+                <tr>
+                    <th>镜头 ID</th>
+                    <th>生成方式</th>
+                    <th>分数</th>
+                    <th>评级</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for shot in project.quality.shots %}
+                <tr>
+                    <td>{{ shot.shot_id }}</td>
+                    <td>{{ shot.gen_method }}</td>
+                    <td class="score-cell {% if shot.score >= 0.85 %}score-high{% elif shot.score >= 0.7 %}score-mid{% else %}score-low{% endif %}">
+                        {{ shot.score }}
+                    </td>
+                    <td>
+                        {% if shot.score >= 0.85 %}
+                        <span class="badge ok">优秀</span>
+                        {% elif shot.score >= 0.7 %}
+                        <span class="badge running">可接受</span>
+                        {% else %}
+                        <span class="badge failed">需重试</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h3>暂无质量数据</h3>
+        <p>质量评分数据将在帧生成后出现。</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Tab: 输出视频 -->
+<div class="tab-content" id="tab-video">
+    {% if project.videos %}
+        {% for v in project.videos %}
+        <div class="card mb-16">
+            <div class="card-header">{{ v.name }}</div>
+            <div class="video-wrapper">
+                <video controls>
+                    <source src="/{{ v.path }}" type="video/mp4">
+                    您的浏览器不支持视频播放。
+                </video>
+            </div>
+            <div class="text-muted text-sm" style="padding:0 20px 12px">
+                文件大小: {{ "%.1f"|format(v.size / 1048576) }} MB
+            </div>
+        </div>
+        {% endfor %}
+    {% elif project.output_video %}
+    <div class="card mb-16">
+        <div class="card-header">{{ project.output_video }}</div>
+        <div class="video-wrapper">
+            <video controls>
+                <source src="/{{ project.output_video }}" type="video/mp4">
+            </video>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h3>暂无视频</h3>
+        <p>视频将在所有镜头完成后自动合成。</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Tab: 原始数据 -->
+<div class="tab-content" id="tab-raw">
+    <div class="card mb-16">
+        <div class="card-header">文件列表</div>
+        {% if project.frames %}
+        <table class="quality-table">
+            <thead><tr><th>文件名</th><th>路径</th></tr></thead>
+            <tbody>
+                {% for f in project.frames %}
+                <tr>
+                    <td>{{ f.name }}</td>
+                    <td class="text-muted text-sm">{{ f.path }}</td>
+                </tr>
+                {% endfor %}
+                {% for v in project.videos %}
+                <tr>
+                    <td>{{ v.name }} <span class="badge ok">视频</span></td>
+                    <td class="text-muted text-sm">{{ v.path }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state"><p>暂无文件</p></div>
+        {% endif %}
+    </div>
+
+    {% if project.trace_file %}
+    <div class="card">
+        <div class="flex-between">
+            <div class="card-header" style="margin-bottom:0">执行追踪</div>
+            <button class="btn btn-sm btn-outline" onclick="loadTrace('{{ project.id }}')">加载 Trace</button>
+        </div>
+        <pre id="trace-content" style="max-height:400px;overflow:auto;background:var(--surface2);padding:14px;border-radius:var(--radius);font-size:0.78rem;display:none;"></pre>
+        <div id="trace-loading" style="display:none;text-align:center;padding:20px;color:var(--text-muted)">加载中...</div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Tab 切换
+(function() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      const target = document.getElementById('tab-' + tab.dataset.tab);
+      if (target) target.classList.add('active');
+    });
+  });
+
+  // 自动刷新 (运行中的项目每 5 秒刷新)
+  const status = '{{ project.status }}';
+  if (status === 'running') {
+    setTimeout(() => { window.location.reload(); }, 5000);
+  }
+})();
+
+// 加载 trace
+async function loadTrace(projectId) {
+  const pre = document.getElementById('trace-content');
+  const loading = document.getElementById('trace-loading');
+  pre.style.display = 'none';
+  loading.style.display = 'block';
+
+  try {
+    const resp = await fetch('/api/projects/' + projectId + '/trace');
+    const data = await resp.json();
+    pre.textContent = JSON.stringify(data, null, 2);
+    pre.style.display = 'block';
+    loading.style.display = 'none';
+  } catch (err) {
+    pre.textContent = '加载失败: ' + err.message;
+    pre.style.display = 'block';
+    loading.style.display = 'none';
+  }
+}
+</script>
+{% endblock %}

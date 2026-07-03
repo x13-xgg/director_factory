@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}新建项目 — Director Factory{% endblock %}
+
+{% block content %}
+<div class="mb-24">
+    <a href="/" class="text-muted text-sm">&larr; 返回仪表盘</a>
+</div>
+
+<h1 class="mb-24">新建视频生产项目</h1>
+
+<div class="card" style="max-width:700px">
+    <form id="new-project-form">
+        <div class="form-group">
+            <label class="form-label" for="prompt">创意描述 *</label>
+            <textarea class="form-textarea" id="prompt" name="prompt"
+                      placeholder="描述你想要的视频内容、风格、故事走向..."
+                      required></textarea>
+            <div class="form-hint">例如："一部赛博朋克风格的短剧，主角是一位在地下城市中寻找失踪妹妹的黑客..."</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="genre">类型</label>
+            <select class="form-select" id="genre" name="genre">
+                <option value="">自动判断</option>
+                <option value="scifi">科幻</option>
+                <option value="animation">动画</option>
+                <option value="realistic">写实</option>
+                <option value="suspense">悬疑</option>
+                <option value="drama">剧情</option>
+                <option value="fantasy">奇幻</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="language">目标语言</label>
+            <select class="form-select" id="language" name="language">
+                <option value="zh">中文 Chinese</option>
+                <option value="en">English</option>
+                <option value="ja">日本語 Japanese</option>
+                <option value="ko">한국어 Korean</option>
+            </select>
+            <div class="form-hint">中文时跳过翻译，其他语言自动翻译对话并切换 TTS 语音</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="duration">目标时长 (秒)</label>
+            <input class="form-input" type="number" id="duration" name="duration_hint"
+                   value="60" min="10" max="600" step="10">
+            <div class="form-hint">建议 30-120 秒，更长时间需要更多镜头</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="style">风格参考</label>
+            <input class="form-input" type="text" id="style" name="style_ref"
+                   placeholder="可选：参考风格描述、艺术家名、视觉关键词">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="quality">
+                质量阈值: <span class="range-value" id="quality-display">0.85</span>
+            </label>
+            <input type="range" id="quality" name="quality_threshold"
+                   value="0.85" min="0.5" max="1.0" step="0.05"
+                   oninput="document.getElementById('quality-display').textContent = this.value">
+            <div class="form-hint">低于此分数的镜头将被自动重试</div>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:28px">
+            <button type="submit" class="btn btn-primary" id="submit-btn">启动生产</button>
+            <a href="/" class="btn btn-outline">取消</a>
+        </div>
+
+        <div id="submit-status" style="margin-top:12px; display:none;"></div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+  const form = document.getElementById('new-project-form');
+  const btn = document.getElementById('submit-btn');
+  const status = document.getElementById('submit-status');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    const payload = Object.fromEntries(formData.entries());
+    payload.duration_hint = parseInt(payload.duration_hint) || 60;
+    payload.quality_threshold = parseFloat(payload.quality_threshold) || 0.85;
+
+    btn.disabled = true;
+    btn.textContent = '正在启动...';
+    status.style.display = 'block';
+    status.innerHTML = '<div class="text-muted">正在提交项目...</div>';
+
+    try {
+      const resp = await fetch('/api/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await resp.json();
+
+      if (resp.ok && data.project_id) {
+        status.innerHTML = '<div style="color:var(--success)">项目已启动！正在跳转...</div>';
+        setTimeout(() => {
+          window.location.href = '/project/' + data.project_id;
+        }, 800);
+      } else {
+        status.innerHTML = '<div style="color:var(--danger)">错误: ' + (data.error || '未知错误') + '</div>';
+        btn.disabled = false;
+        btn.textContent = '启动生产';
+      }
+    } catch (err) {
+      status.innerHTML = '<div style="color:var(--danger)">网络错误: ' + err.message + '</div>';
+      btn.disabled = false;
+      btn.textContent = '启动生产';
+    }
+  });
+})();
+</script>
+{% endblock %}

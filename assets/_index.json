@@ -1,0 +1,83 @@
+{
+  "script_repo": {},
+  "char_asset_db": {
+    "char_001:embedding": {
+      "key": "char_001:embedding",
+      "version": 1,
+      "locked": true
+    },
+    "char_001:lora": {
+      "key": "char_001:lora",
+      "version": 2,
+      "locked": true
+    },
+    "char_001:profile": {
+      "key": "char_001:profile",
+      "version": 1,
+      "locked": true
+    }
+  },
+  "prompt_repo": {
+    "prompt:02c42a3c4b5a596e9c7d": {
+      "key": "prompt:02c42a3c4b5a596e9c7d",
+      "version": 1,
+      "locked": true
+    },
+    "prompt:00ba1861858b3a25feff": {
+      "key": "prompt:00ba1861858b3a25feff",
+      "version": 1,
+      "locked": true
+    },
+    "prompt:6dac8ee3eb7441c7abd7": {
+      "key": "prompt:6dac8ee3eb7441c7abd7",
+      "version": 1,
+      "locked": true
+    },
+    "prompt:cdeae9d73cbc197f26db": {
+      "key": "prompt:cdeae9d73cbc197f26db",
+      "version": 1,
+      "locked": true
+    },
+    "prompt:a00734f5edd76328300a": {
+      "key": "prompt:a00734f5edd76328300a",
+      "version": 2,
+      "locked": true
+    },
+    "prompt:71e99f0a9d5df41d7efe": {
+      "key": "prompt:71e99f0a9d5df41d7efe",
+      "version": 1,
+      "locked": true
+    },
+    "prompt:7c2d44b12627f8b39902": {
+      "key": "prompt:7c2d44b12627f8b39902",
+      "version": 1,
+      "locked": true
+    },
+    "prompt:12d009e5854911d0ceb2": {
+      "key": "prompt:12d009e5854911d0ceb2",
+      "version": 1,
+      "locked": true
+    },
+    "prompt:e2ba79749aea9403db2c": {
+      "key": "prompt:e2ba79749aea9403db2c",
+      "version": 1,
+      "locked": true
+    },
+    "prompt:a6ae9595ddd9e97c270c": {
+      "key": "prompt:a6ae9595ddd9e97c270c",
+      "version": 2,
+      "locked": true
+    },
+    "prompt:ea07c1889e57708b9845": {
+      "key": "prompt:ea07c1889e57708b9845",
+      "version": 1,
+      "locked": true
+    },
+    "prompt:3c398d5a1041184f4a8a": {
+      "key": "prompt:3c398d5a1041184f4a8a",
+      "version": 1,
+      "locked": true
+    }
+  },
+  "sfx_library": {}
+}

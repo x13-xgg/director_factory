@@ -1,0 +1,158 @@
+# 全自动导演工厂 — 生产级 Docker Compose 编排
+# 用法:
+#   开发模式: docker-compose up app
+#   全栈模式: docker-compose --profile full up -d
+#   监控栈:   docker-compose --profile monitoring up -d
+
+services:
+  # ── 核心应用 ───────────────────────────────────
+  app:
+    build: .
+    image: director-factory:latest
+    container_name: director-factory
+    command: serve --port 8001
+    env_file:
+      - .env
+    environment:
+      - DIRECTOR_MODE=${DIRECTOR_MODE:-production}
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://director:${POSTGRES_PASSWORD:-director}@postgres:5432/director_factory
+      - METRICS_ENABLED=true
+      - METRICS_PORT=9091
+    volumes:
+      - ./outputs:/app/outputs
+      - ./assets:/app/assets
+      - ./.env:/app/.env:ro
+    ports:
+      - "9091:9091"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    # GPU 仅在 Linux + nvidia-container-toolkit 环境中可用
+
+  # ── API 服务 (可选) ────────────────────────────
+  api:
+    build: .
+    image: director-factory:latest
+    container_name: director-factory-api
+    command: serve --port 8000
+    env_file:
+      - .env
+    environment:
+      - METRICS_ENABLED=false
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./outputs:/app/outputs
+      - ./assets:/app/assets
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    profiles: ["full", "api"]
+
+  # ── PostgreSQL ──────────────────────────────────
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: director-factory-pg
+    environment:
+      POSTGRES_USER: director
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-director}
+      POSTGRES_DB: director_factory
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U director -d director_factory"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    profiles: ["", "full"]
+
+  # ── Redis ──────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: director-factory-redis
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    profiles: ["", "full"]
+
+  # ── Prometheus ──────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v3.0.0
+    container_name: director-factory-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    profiles: ["monitoring", "full"]
+
+  # ── Grafana ────────────────────────────────────
+  grafana:
+    image: grafana/grafana:11.0.0
+    container_name: director-factory-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_INSTALL_PLUGINS: ""
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    profiles: ["monitoring", "full"]
+
+  # ── PostgreSQL Exporter ─────────────────────────
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.16.0
+    container_name: director-factory-pg-exporter
+    environment:
+      DATA_SOURCE_NAME: postgresql://director:${POSTGRES_PASSWORD:-director}@postgres:5432/director_factory?sslmode=disable
+    ports:
+      - "9187:9187"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles: ["monitoring", "full"]
+
+  # ── Redis Exporter ─────────────────────────────
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.62.0
+    container_name: director-factory-redis-exporter
+    environment:
+      REDIS_ADDR: redis://redis:6379
+    ports:
+      - "9121:9121"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    profiles: ["monitoring", "full"]
+
+volumes:
+  pg_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:

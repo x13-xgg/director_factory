@@ -1,0 +1,11 @@
+# Grafana 仪表板自动加载配置
+apiVersion: 1
+
+providers:
+  - name: DirectorFactory
+    folder: 导演工厂
+    type: file
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
